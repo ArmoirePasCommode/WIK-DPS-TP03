@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  my_app:
+    build:
+      context: .
+      dockerfile: multi-stage.dockerfile
+    expose:
+      - '25565'
+    deploy:
+      replicas: 4
+    restart: always
+    environment:
+      - PING_LISTEN_PORT=25565
+    networks:
+      - app
+
+  reverse-proxy:
+    container_name: nginx-reverse-proxy
+    image: nginx:latest
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - 80:8080  # Exposer le service NGINX sur le port 8080 de l'hôte
+    depends_on: 
+      - my_app
+    networks:
+      - app
+
+networks:
+  app:
+    driver: bridge
